@@ -85,8 +85,8 @@ struct IndexFlatL2 : IndexFlat {
 
 struct IndexFlatFusion : IndexFlat {
     explicit IndexFlatFusion(idx_t d) : IndexFlat(d, METRIC_FUSION) {}
-    explicit IndexFlatFusion(idx_t d, size_t filter_size)
-            : IndexFlat(d, METRIC_FUSION), filter_size(filter_size) {}
+    explicit IndexFlatFusion(idx_t d, size_t num_filters, size_t filter_dim)
+            : IndexFlat(d, METRIC_FUSION), filter_size(sizeof(float)*num_filters*filter_dim) {}
     IndexFlatFusion() {}
 
     size_t filter_size;
@@ -102,7 +102,7 @@ struct IndexFlatFusion : IndexFlat {
         this->codes.resize((ntotal + n) * code_size);
         this->filters.resize((ntotal + n) * filter_size);
         sa_encode(n, x, codes.data() + (ntotal * code_size));
-        sa_encode(n, filters, this->filters.data() + (ntotal * filter_size));
+        memcpy(this->filters.data() + (ntotal * filter_size), filters, n * filter_size);
 
         ntotal += n;
     }
